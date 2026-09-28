@@ -1,9 +1,9 @@
-#' @title Burk (2024) Survival Tuning Spaces
+#' @title Burk (2026) Survival Tuning Spaces
 #'
 #' @name mlr_tuning_spaces_sbb
 #'
 #' @description
-#' Tuning spaces from the `r cite_bib("burk_2024")` article.
+#' Tuning spaces from the `r cite_bib("burk_2026")` article.
 #'
 #' @source
 #' `r format_bib("burk_2024")`
