@@ -2,37 +2,42 @@
 % Please edit documentation in R/tuning_spaces_sbb.R
 \name{mlr_tuning_spaces_sbb}
 \alias{mlr_tuning_spaces_sbb}
-\alias{mlr_tuning_spaces_surv.akritas.sbb}
-\alias{mlr_tuning_spaces_surv.glmnet.sbb}
+\alias{mlr_tuning_spaces_surv.cv_glmnet.sbb}
+\alias{mlr_tuning_spaces_surv.cv_ncvsurv.sbb}
 \alias{mlr_tuning_spaces_surv.penalized.sbb}
-\alias{mlr_tuning_spaces_surv.parametric.sbb}
-\alias{mlr_tuning_spaces_surv.flexsurv.sbb}
+\alias{mlr_tuning_spaces_surv.flexspline.sbb}
 \alias{mlr_tuning_spaces_surv.rfsrc.sbb}
 \alias{mlr_tuning_spaces_surv.ranger.sbb}
 \alias{mlr_tuning_spaces_surv.cforest.sbb}
 \alias{mlr_tuning_spaces_surv.aorsf.sbb}
 \alias{mlr_tuning_spaces_surv.rpart.sbb}
-\alias{mlr_tuning_spaces_surv.mboost.sbb}
+\alias{mlr_tuning_spaces_surv.mboost.cox.sbb}
+\alias{mlr_tuning_spaces_surv.mboost.aft.sbb}
 \alias{mlr_tuning_spaces_surv.cv_coxboost.sbb}
 \alias{mlr_tuning_spaces_surv.xgboost.cox.sbb}
 \alias{mlr_tuning_spaces_surv.xgboost.aft.sbb}
 \alias{mlr_tuning_spaces_surv.svm.sbb}
-\title{Burk (2024) Survival Tuning Spaces}
+\title{Survival Tuning Spaces from Burk et al. (2026)}
 \source{
-Burk L, Zobolas J, Bischl B, Bender A, Wright MN, Sonabend R (2024).
+Burk L, Zobolas J, Bischl B, Bender A, Wright MN, Sonabend R (2026).
 \dQuote{A Large-Scale Neutral Comparison Study of Survival Models on Low-Dimensional Data.}
-2406.04098, \url{https://arxiv.org/abs/2406.04098}.
+\emph{Bioinformatics}.
+\doi{10.1093/bioinformatics/btag186}.
 }
 \description{
-Tuning spaces from the Burk (2024) article.
-}
-\section{akritas tuning space}{
+Tuning spaces for survival learners from the Burk (2026) article.
+The learners are provided by \CRANpkg{mlr3proba} and \pkg{mlr3extralearners}.
 
-\itemize{
-\item lambda \eqn{[0, 1]}{[0, 1]}
-}
-}
+The tuning spaces only cover the learner hyperparameters.
+In the article, each learner was additionally wrapped in a preprocessing pipeline,
+tuned with Bayesian optimization (grid search for \code{surv.flexspline} and \code{surv.rpart}),
+and XGBoost used the outer test set for early stopping.
+Log-transformed ranges such as \eqn{2^x, x \in [-10, 10]} are expressed as equivalent \code{logscale = TRUE} ranges.
 
+The Akritas estimator and the parametric AFT model from the article are not included,
+because their learners were removed from \pkg{mlr3extralearners}.
+The flexible parametric spline model uses \code{surv.flexspline}, the renamed \code{surv.flexible} learner.
+}
 \section{cv_glmnet tuning space}{
 
 \itemize{
@@ -40,20 +45,24 @@ Tuning spaces from the Burk (2024) article.
 }
 }
 
+\section{cv_ncvsurv tuning space}{
+
+\itemize{
+\item penalty MCP
+\item alpha 1
+\item gamma \eqn{[1.0001, 10]}{[1.0001, 10]} Logscale
+}
+}
+
 \section{penalized tuning space}{
 
 \itemize{
-\item lambda1 \eqn{[-10, 10]}{[-10, 10]} (2^x)
-\item lambda2 \eqn{[-10, 10]}{[-10, 10]} (2^x)
+\item lambda1 \eqn{[0.0009765625, 1024]}{[0.0009765625, 1024]} Logscale
+\item lambda2 \eqn{[0.0009765625, 1024]}{[0.0009765625, 1024]} Logscale
 }
 }
 
-\section{parametric tuning space}{
-
-\verb{r rd_info(lts("surv.parametric.sbb"))}
-}
-
-\section{flexsurv tuning space}{
+\section{flexspline tuning space}{
 
 \itemize{
 \item k \eqn{[1, 10]}{[1, 10]}
@@ -62,22 +71,57 @@ Tuning spaces from the Burk (2024) article.
 
 \section{rfsrc tuning space}{
 
-\verb{r rd_info(lts("surv.rfsrc.sbb"))}
+\itemize{
+\item ntree 1000
+\item ntime 150
+\item splitrule [\dQuote{bs.gradient}, \dQuote{logrank}]
+\item mtry.ratio \eqn{[0, 1]}{[0, 1]}
+\item nodesize \eqn{[1, 50]}{[1, 50]}
+\item samptype [\dQuote{swr}, \dQuote{swor}]
+\item sampsize.ratio \eqn{[0, 1]}{[0, 1]}
+}
 }
 
 \section{ranger tuning space}{
 
-\verb{r rd_info(lts("surv.ranger.sbb"))}
+\itemize{
+\item num.trees 1000
+\item time.interest 150
+\item splitrule [\dQuote{C}, \dQuote{maxstat}, \dQuote{logrank}]
+\item mtry.ratio \eqn{[0, 1]}{[0, 1]}
+\item min.node.size \eqn{[1, 50]}{[1, 50]}
+\item replace [TRUE,FALSE]
+\item sample.fraction \eqn{[0, 1]}{[0, 1]}
+}
 }
 
 \section{cforest tuning space}{
 
-\verb{r rd_info(lts("surv.cforest.sbb"))}
+\itemize{
+\item ntree 1000
+\item mtryratio \eqn{[0, 1]}{[0, 1]}
+\item minsplit \eqn{[1, 50]}{[1, 50]}
+\item mincriterion \eqn{[0, 1]}{[0, 1]}
+\item replace [TRUE,FALSE]
+\item fraction \eqn{[0, 1]}{[0, 1]}
+}
 }
 
 \section{aorsf tuning space}{
 
-\verb{r rd_info(lts("surv.aorsf.sbb"))}
+\itemize{
+\item n_tree 1000
+\item control_type fast
+\item importance none
+\item mtry_ratio \eqn{[0, 1]}{[0, 1]}
+\item leaf_min_events \eqn{[5, 50]}{[5, 50]}
+}
+
+The article also set \code{split_min_obs = leaf_min_events + 5}, which a tuning space cannot express.
+To reproduce it, add the transformation to the search space:
+\code{search_space = as_search_space(lts("surv.aorsf.sbb"))},
+\code{search_space$extra_trafo = function(x, param_set) {x$split_min_obs = x$leaf_min_events + 5L; x}},
+and pass \code{search_space} together with the untuned learner to \code{\link[mlr3tuning:auto_tuner]{mlr3tuning::auto_tuner()}}.
 }
 
 \section{rpart tuning space}{
@@ -87,10 +131,20 @@ Tuning spaces from the Burk (2024) article.
 }
 }
 
-\section{mboost tuning space}{
+\section{mboost Cox tuning space}{
 
 \itemize{
-\item family [\dQuote{gehan}, \dQuote{cindex}, \dQuote{coxph}, \dQuote{weibull}]
+\item family coxph
+\item mstop \eqn{[10, 5000]}{[10, 5000]}
+\item nu \eqn{[0, 0.1]}{[0, 0.1]}
+\item baselearner [\dQuote{bols}, \dQuote{btree}]
+}
+}
+
+\section{mboost AFT tuning space}{
+
+\itemize{
+\item family [\dQuote{gehan}, \dQuote{weibull}]
 \item mstop \eqn{[10, 5000]}{[10, 5000]}
 \item nu \eqn{[0, 0.1]}{[0, 0.1]}
 \item baselearner [\dQuote{bols}, \dQuote{btree}]
@@ -99,21 +153,77 @@ Tuning spaces from the Burk (2024) article.
 
 \section{cv_coxboost tuning space}{
 
-\verb{r rd_info(lts("surv.cv_coxboost.sbb"))}
+\itemize{
+\item penalty optimCoxBoostPenalty
+\item maxstepno 5000
+\item K 3
+}
+
+CoxBoost tunes itself via internal cross-validation, so this tuning space only contains constants.
 }
 
 \section{xgboost.cox tuning space}{
 
-\verb{r rd_info(lts("surv.xgboost.cox.sbb"))}
+\itemize{
+\item tree_method hist
+\item booster gbtree
+\item early_stopping_rounds 50
+\item nrounds \eqn{[1, 5000]}{[1, 5000]}
+\item max_depth \eqn{[1, 20]}{[1, 20]}
+\item subsample \eqn{[0, 1]}{[0, 1]}
+\item colsample_bytree \eqn{[0, 1]}{[0, 1]}
+\item learning_rate \eqn{[0, 1]}{[0, 1]}
+\item grow_policy [\dQuote{depthwise}, \dQuote{lossguide}]
+}
 }
 
 \section{xgboost.aft tuning space}{
 
-\verb{r rd_info(lts("surv.xgboost.aft.sbb"))}
+\itemize{
+\item tree_method hist
+\item booster gbtree
+\item early_stopping_rounds 50
+\item nrounds \eqn{[1, 5000]}{[1, 5000]}
+\item max_depth \eqn{[1, 20]}{[1, 20]}
+\item subsample \eqn{[0, 1]}{[0, 1]}
+\item colsample_bytree \eqn{[0, 1]}{[0, 1]}
+\item learning_rate \eqn{[0, 1]}{[0, 1]}
+\item grow_policy [\dQuote{depthwise}, \dQuote{lossguide}]
+\item aft_loss_distribution [\dQuote{normal}, \dQuote{logistic}, \dQuote{extreme}]
+\item aft_loss_distribution_scale \eqn{[0.5, 2]}{[0.5, 2]}
 }
 
-\section{ssvm tuning space}{
-
-\verb{r rd_info(lts("surv.svm.sbb"))}
+The XGBoost tuning spaces tune \code{nrounds} internally via early stopping,
+so the learner's \verb{$validate} field must be set, e.g. \code{lts("surv.xgboost.cox.sbb")$get_learner(validate = 0.2)}.
 }
 
+\section{svm tuning space}{
+
+\itemize{
+\item type hybrid
+\item diff.meth makediff3
+\item kernel [\dQuote{lin_kernel}, \dQuote{rbf_kernel}, \dQuote{add_kernel}]
+\item gamma \eqn{[1e-10, 1e+10]}{[1e-10, 1e+10]} Logscale
+\item mu \eqn{[1e-10, 1e+10]}{[1e-10, 1e+10]} Logscale
+\item kernel.pars \eqn{[0.03125, 32]}{[0.03125, 32]} Logscale
+}
+}
+
+\examples{
+if (mlr3misc::require_namespaces(c("mlr3proba", "mlr3extralearners"), quietly = TRUE)) {
+  library(mlr3proba)
+  library(mlr3extralearners)
+
+  learner = lts("surv.rpart.sbb")$get_learner()
+
+  instance = tune(
+    tnr("grid_search", resolution = 5),
+    task = tsk("rats"),
+    learner = learner,
+    resampling = rsmp("holdout"),
+    measure = msr("surv.cindex")
+  )
+
+  instance$result
+}
+}

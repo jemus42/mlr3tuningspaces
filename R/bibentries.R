@@ -41,8 +41,8 @@ bibentries = c(
     year = "2021",
   ),
   
-  burk_2026       = bibentry("misc",
-    key           = "burk_2024",
+  burk_2026       = bibentry("article",
+    key           = "burk_2026",
     title         = "A Large-Scale Neutral Comparison Study of Survival Models on Low-Dimensional Data",
     author        = "Lukas Burk and John Zobolas and Bernd Bischl and Andreas Bender and Marvin N. Wright and Raphael Sonabend",
     journal       = "Bioinformatics",

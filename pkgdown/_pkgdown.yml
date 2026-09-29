@@ -60,6 +60,10 @@ reference:
     contents:
       - mlr_tuning_spaces_rtdl
       - starts_with("mlr_tuning_spaces_rtdl")
+  - title: Burk 2026
+    contents:
+      - mlr_tuning_spaces_sbb
+      - starts_with("mlr_tuning_spaces_sbb")
   - title: Package
     contents:
       - mlr3tuningspaces-package

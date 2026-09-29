@@ -1,5 +1,7 @@
 # mlr3tuningspaces (development version)
 
+* feat: Added tuning spaces for survival learners from the Burk et al. (2026) article.
+
 # mlr3tuningspaces 0.7.0
 
 * compatibility: mlr3 1.7.2
