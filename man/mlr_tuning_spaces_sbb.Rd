@@ -221,9 +221,23 @@ if (mlr3misc::require_namespaces(c("mlr3proba", "mlr3extralearners"), quietly = 
     task = tsk("rats"),
     learner = learner,
     resampling = rsmp("holdout"),
-    measure = msr("surv.cindex")
+    measures = msr("surv.cindex")
   )
 
   instance$result
+}
+
+if (mlr3misc::require_namespaces(c("mlr3proba", "mlr3extralearners", "mlr3pipelines"), quietly = TRUE)) {
+  library(mlr3pipelines)
+
+  # Compose XGBoost AFT with a distribution prediction, ready to be tuned
+  xgb_aft = ppl("distrcompositor",
+    learner = lts("surv.xgboost.aft.sbb")$get_learner(),
+    form = "aft",
+    overwrite = TRUE,
+    graph_learner = TRUE
+  )
+  set_validate(xgb_aft, 0.2, ids = "surv.xgboost.aft")
+  xgb_aft
 }
 }
