@@ -193,12 +193,20 @@ rd_info.TuningSpace = function(obj, ...) { # nolint
         sprintf("* %s -", name)
       } else {
         switch(ps$params[name, , on = "id"]$cls,
-          "ParamLgl" = sprintf("* %s \\[%s\\]", name, as_short_string(space$content$levels[[1]])),
+          "ParamLgl" = sprintf("* %s \\[%s\\]", name, as_short_string(space$content$levels[[1]] %??% c(TRUE, FALSE))),
           "ParamFct" = sprintf("* %s \\[%s\\]", name, rd_format_string(space$content$levels[[1]])),
-          {lower = c(space$content$param$lower, space$content$lower) # one is NULL
-          upper = c(space$content$upper, space$content$param$upper)
-          logscale = if (is.null(space$content$logscale) || !space$content$logscale) character(1) else "Logscale"
-          sprintf("* %s %s %s", name, rd_format_range(lower, upper), logscale)}
+          {
+            content = space$content
+            # Domain tokens, e.g. to_tune(p_dbl(logscale = TRUE)), store bounds on the log scale
+            logscale = isTRUE(content$logscale) || isTRUE(content$cargo[[1L]]$logscale)
+            lower = content$lower %??% ps$lower[[name]]
+            upper = content$upper %??% ps$upper[[name]]
+            if (inherits(content, "Domain") && logscale) {
+              lower = exp(lower)
+              upper = exp(upper)
+            }
+            sprintf("* %s %s %s", name, rd_format_range(lower, upper), if (logscale) "Logscale" else character(1))
+          }
         )
       }
     })
